@@ -1,0 +1,6 @@
+1.roscore
+2.roslaunch mynav lz.launch
+3.roslaunch mynav amcl_pioneer.launch
+4.rosservice call /global_localization
+5.rosrun teleop_twist_keyboard teleop_twist_keyboard.py cmd_vel:=/pioneer/cmd_vel
+6.rviz(add map,array etc.)
