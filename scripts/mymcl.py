@@ -27,7 +27,6 @@ def init(x_range, y_range, hdg_range, N):
 	particles[:, 1] = np.random.randint(y_range[0], y_range[1], size=N) # y值
 	particles[:, 2] = np.random.uniform(hdg_range[0], hdg_range[1], size=N) # 角度
 	particles[:, 2] %= 2 * np.pi # 轉成角度
-
 	return particles
 
 def predict(particles, input, noise, dt=1.0):
@@ -124,12 +123,12 @@ def main(N,scope):
         ob_x.append(0)
         ob_y.append(i)
         ob.append([0,i])
-    for i in range(0,40):
-        ob_x.append(20)
+    for i in range(0,43):
+        ob_x.append(22)
         ob_y.append(i)
         ob.append([20,i])
-    for i in range(0,40):
-        ob_x.append(40)
+    for i in range(0,36):
+        ob_x.append(43)
         ob_y.append(60-i)
         ob.append([40,60-i])
     for i in range(0,9):
@@ -147,17 +146,16 @@ def main(N,scope):
     # plt.scatter(particles[:, 0], particles[:, 1],s=0.5)
 
     plt.plot(ob_x, ob_y, ".k")
-    st = plt.plot(sx, sy, "^", label="start")
-    gl = plt.plot(gx, gy, "v", label="goal")
-    plt.plot(particles[:, 0], particles[:, 1], ".b", markersize=2)
+    st = plt.plot(sx, sy, "^", label="start", markersize=8)
+    gl = plt.plot(gx, gy, "v", label="goal", markersize=8)
+    plt.plot(particles[:, 0], particles[:, 1], ".b", markersize=4)
     plt.grid(True)
     plt.axis("equal")
     plt.legend(loc='upper right')
     plt.waitforbuttonpress()
 
     for i in range(len(step)):
-        robot_pos = step[i]
-        xs = []
+        robot_pos = step[i] # 當前位置
         sensor_std_err = 0.2
         # if(i >= 2):
         #     der0 = -math.atan2((step[i, 1] - step[i-2, 1]), (step[i, 0] - step[i-2, 0])) - math.atan2((step[i, 1] - step[i-1, 1]), (step[i, 0] - step[i-1, 0]))
@@ -171,13 +169,14 @@ def main(N,scope):
 
         # 使用sensor找出範圍內障礙物
         ob_detected =[]
-        for x in range(robot_pos[0] - 15, robot_pos[0] + 16):
-            for y in range(robot_pos[1], robot_pos[1] + 16):
+        for x in range(robot_pos[0] - 15, robot_pos[0] + 21):
+            for y in range(robot_pos[1], robot_pos[1] + 21):
                 for j in range(len(ob)):
                     if([x,y] == ob[j]):
                         ob_detected.append([x,y])
         ob_detected = np.array(ob_detected)
         if(len(ob_detected) == 0):
+            print("no obstacle detected!")
             continue
         # 取機器人和障礙物距離
         dt_total = np.linalg.norm(ob_detected - robot_pos, axis=1) + (np.random.randn(len(ob_detected)) * sensor_std_err)
@@ -190,6 +189,7 @@ def main(N,scope):
             simple_resample(particles, weights)
 
         mean, var = estimate(particles, weights)
+        xs = []
         xs.append(np.rint(mean))
 
         plt.cla()
