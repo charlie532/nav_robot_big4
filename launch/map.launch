@@ -1,4 +1,0 @@
-<launch>
-  <arg name="map" default="$(find mynav)/world/map2.yaml"/>
-  <node pkg="map_server" type="map_server" name="map_server" args="$(arg map)"/>
-</launch>

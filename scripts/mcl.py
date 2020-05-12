@@ -78,10 +78,8 @@ def simple_resample(particles, weights):
 	particles[:] = particles[indexes]
 	weights[:] = weights[indexes]
 	weights /= np.sum(weights) # normalize  
-	plt.scatter(particles[:, 0], particles[:, 1],s=0.5) 
-
     
-def run_pf(N, iters=18, sensor_std_err=0.1, xlim=(0, 20), ylim=(0, 20)):    
+def main(N, iters=18, sensor_std_err=0.1, xlim=(0, 20), ylim=(0, 20)):    
 	landmarks = np.array([[-3, 2], [3, 12], [10,15], [19,17]]) 
 	NL = len(landmarks)
 	
@@ -126,4 +124,4 @@ def run_pf(N, iters=18, sensor_std_err=0.1, xlim=(0, 20), ylim=(0, 20)):
     
 
 if __name__ == '__main__':    
-	run_pf(N=10000)
+	main(N=10000)

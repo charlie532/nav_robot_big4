@@ -1,0 +1,5 @@
+1.sudo apt-get install ros-kinetic-gmapping
+2.sudo apt-get install ros-kinetic-slam-gmapping
+3.sudo apt-get install ros-kinetic-map-server
+4.sudo apt-get install ros-kinetic-teleop-twist-keyboard
+5.pioneer_description package

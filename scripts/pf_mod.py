@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Estimation parameter of PF
-Q = np.diag([0.2]) ** 2  # range error
-R = np.diag([2.0, np.deg2rad(40.0)]) ** 2  # input error
+Q = np.diag([0.2]) ** 2  # range error, diag: 1維變對角矩陣 2維取對角矩陣值, Q = [[0.04]]
+R = np.diag([2.0, np.deg2rad(40.0)]) ** 2  # input error, deg2rad: 角度轉弧度, R = [[4. 0.],[0. 0.48738787]]
+
 
 #  Simulation parameter
 Q_sim = np.diag([0.2]) ** 2
@@ -246,4 +247,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+  main()
