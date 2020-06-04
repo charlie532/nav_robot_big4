@@ -1,12 +1,14 @@
 '''
 
-made by yang xing yeeeeee
+MCL simulization made by Yang Xing Yeeeeeeeeeeeeeeeeeeeeeeeee
+
 1.初始化,在地圖上隨機灑點(最小單位1 int)
-2.取sensor model觀測到的數據(19條laser, 長30int)
-3.移動預測點(掉到地圖外的還沒處理)
-4.權重更新(貝氏濾波)(取得被laser偵測倒的障礙物位置)
-5.重新取樣
-6.重複2~5直到結束
+2.取機器人的laser model觀測到的數據(36條laser, 長20int)
+3.粒子模你的laser model數據(共N個)
+4.移動預測點(掉到地圖外的還沒處理)
+5.權重更新(貝氏濾波)(取得被laser偵測倒的障礙物位置)
+6.重新取樣
+7.重複2~6直到結束
 
 '''
 import numpy as np
@@ -25,6 +27,7 @@ def map_plot( ob_x, ob_y, sx, sy, gx, gy, particles ) :
     plt.plot([35, 35], [0, 15], color = 'k', linewidth = 5)
     plt.plot([35, 43], [24, 24], color = 'k', linewidth = 5)
     plt.plot([43, 43], [24, 60], color = 'k', linewidth = 5)
+    plt.plot([30, 30], [50, 60], color = 'k', linewidth = 5)
     plt.plot(ob_x, ob_y, ".k")
     plt.plot(particles[:, 0], particles[:, 1], ".b", markersize=4)
     st = plt.plot(sx, sy, "^", label="start", markersize=8)
@@ -41,6 +44,36 @@ def init( x_range, y_range, hdg_range, N ) :
 	particles[:, 2] = np.random.uniform(hdg_range[0], hdg_range[1], size=N) # 角度
 	particles[:, 2] %= 2 * np.pi # 轉成弧度
 	return particles
+
+def laser_model( ob, robot_pos, scope, laser_len=20 ) :
+    ob_detected = []
+    for i in range(36) :
+        isdetect = 0
+        min_x = 0
+        min_y = 0
+        intersection_list = []
+        laser_scan = [ laser_len * math.cos(i * 10 * np.pi / 180), laser_len * math.sin(i * 10 * np.pi / 180) ]
+        for k in range(int(len(ob)/2)) :
+            intersection_x, intersection_y = find_intersection( ob[2 * k], ob[2 * k + 1], robot_pos, laser_scan )
+            if intersection_x != None :
+                intersection_list.append([intersection_x, intersection_y])
+                isdetect = 1
+        intersection_list = np.array(intersection_list)
+        if len(intersection_list) > 1 :
+            min = scope * 10
+            for x in range(len( intersection_list)) :
+                length_numx = np.sqrt((intersection_list[x, 0] - robot_pos[0]) ** 2 + (intersection_list[x, 1] - robot_pos[1]) ** 2)
+                if length_numx < min :
+                    min = length_numx
+                    min_x = intersection_list[x, 0]
+                    min_y = intersection_list[x, 1]
+        if isdetect == 0 :
+            ob_detected.append(laser_scan)
+        elif len(intersection_list) > 1 :
+            ob_detected.append([min_x, min_y])
+        else :
+            ob_detected.append([intersection_list[0, 0], intersection_list[0, 1]])
+    return ob_detected
 
 def predict( particles, input, noise, dt=1.0 ) :
     N = len(particles)
@@ -109,7 +142,7 @@ def resample_elite( particles, weights, range ) :
                 particles[i, 2] = particles[valid_index, 2]
                 weights[i] = weights[valid_index]
 
-def resample_compete( particles, weights, range ) :
+def resample_competitive( particles, weights, range ) :
     N = len(particles)
     old_particles = particles
     old_weights = weights
@@ -234,9 +267,15 @@ def main( N,scope ) :
         ob.append([35, i])
     # ob.append([35, 0])
     # ob.append([35, 15])
+    for i in range(1,10) :
+        ob_x.append(30)
+        ob_y.append(60-i)
+        ob.append([30, 60-i])
+    # ob.append([30, 50])
+    # ob.append([30, 60])
 
     # 初始化
-    # particles 0:x 1:y 2:dir, 權重weight
+    # particles 0:x 1:y 2:面向
     weights = np.zeros(N)
     particles = init((1, scope-1), (1, scope-1), (0, 2*np.pi), N)
 
@@ -264,54 +303,32 @@ def main( N,scope ) :
         print(dt)
         u = np.array([dir_change, dt])
 
-        ob_detected = []
-        for x in range(robot_pos[0] - 15, robot_pos[0] + 16) :
-            for y in range(robot_pos[1] - 15, robot_pos[1] + 16) :
-                for j in range(len(ob)) :
-                    if([x,y] == ob[j]) :
-                        ob_detected.append([x,y])
-        if len(ob_detected) == 0 :
-            print("no obstacle detected around robot!")
-            continue
-
-        # 模擬每10度角放置一雷射模型(0~180),雷射長度30int
         # ob_detected = []
-        # for j in range(19) :
-        #     isdetect = 0
-        #     min_x = 0
-        #     min_y = 0
-        #     intersection_list = []
-        #     laser_scan = [ 30 * math.cos(j * 10 * np.pi / 180), 30 * math.sin(j * 10 * np.pi / 180) ]
-        #     for k in range(int(len(ob)/2)) :
-        #         intersection_x, intersection_y = find_intersection( ob[2 * k], ob[2 * k + 1], robot_pos, laser_scan )
-        #         if intersection_x != None :
-        #             intersection_list.append([intersection_x, intersection_y])
-        #             isdetect = 1
-        #     intersection_list = np.array(intersection_list)
-        #     if len(intersection_list) > 1 :
-        #         min = scope * 10
-        #         for x in range(len( intersection_list)) :
-        #             length_numx = np.sqrt((intersection_list[x, 0] - robot_pos[0]) ** 2 + (intersection_list[x, 1] - robot_pos[1]) ** 2)
-        #             if length_numx < min :
-        #                 min = length_numx
-        #                 min_x = intersection_list[x, 0]
-        #                 min_y = intersection_list[x, 1]
-        #     if isdetect == 0 :
-        #         ob_detected.append(laser_scan)
-        #     elif len(intersection_list) > 1 :
-        #         ob_detected.append([min_x, min_y])
-        #     else :
-        #         ob_detected.append([intersection_list[0, 0], intersection_list[0, 1]])
+        # for x in range(robot_pos[0] - 15, robot_pos[0] + 16) :
+        #     for y in range(robot_pos[1] - 15, robot_pos[1] + 16) :
+        #         for j in range(len(ob)) :
+        #             if([x,y] == ob[j]) :
+        #                 ob_detected.append([x,y])
+        # if len(ob_detected) == 0 :
+        #     print("no obstacle detected around robot!")
+        #     continue
 
+        # 機器人雷射模型
+        # 模擬每10度角放置一雷射模型(360度),雷射長度20int
+        ob_detected = laser_model( ob, robot_pos, scope, laser_len=20 )
+        # 取各laser測距絕對值
         dist_robot = np.linalg.norm(ob_detected - robot_pos, axis=1) + (np.random.randn(len(ob_detected)) * sensor_std_err)
-        # 移動點 input:輸入, noise:噪聲
+        # 粒子雷射模型
+
+
+        # 移動點 input:變量, noise:干擾值
         predict(particles, input=u, noise=(.2, .02))
         # 更新權重
         update(particles, weights, dist_robot, sensor_std_err, ob_detected)
         # 重取樣
         print("neff(weights) is %2f" %(neff(weights)))
         if neff(weights) < N/2 :
-            resample_compete(particles, weights, range)
+            resample_competitive(particles, weights, range)
             # resample_elite(particles, weights, range)
 
         mean, var = estimate(particles, weights)
