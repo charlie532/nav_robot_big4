@@ -6,8 +6,8 @@
                 "limitSymbolsToIncludedHeaders": true
             },
             "includePath": [
-                "/home/charlie/catkin_ws/devel/include/**",
                 "/opt/ros/kinetic/include/**",
+                "/home/charlie/catkin_ws/devel/include/**",
                 "/home/charlie/catkin_ws/src/gmapping_ros/include/**",
                 "/home/charlie/catkin_ws/src/turtlebot3_simulations/turtlebot3_fake/include/**",
                 "/home/charlie/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
@@ -17,7 +17,7 @@
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c11",
+            "cStandard": "gnu11",
             "cppStandard": "c++17"
         }
     ],
